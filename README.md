@@ -19,7 +19,7 @@ This project consists of two parts: Data conversion software to convert the EVE 
 * `cd` into the directory
 * Mangler configuration is in `config.yaml`
 * `python map.py`
-* * This can take a while
+  * This can take a while
 * `python reduce.py`
 * Move the generated file (`testdata.py`) to the `gae` folder and rename it to `data.py`
 * `cd gae`
