@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Station Locater</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="https://nearest.ouroborus.org/">
+<link href="//fonts.googleapis.com/css?family=Oswald:700" rel="stylesheet" type="text/css">
+<link href="/perfect-scrollbar.min.css" rel="stylesheet" type="text/css">
+<style>
+* {
+  -webkit-box-sizing:border-box;
+  box-sizing:border-box;
+  position:relative;
+}
+thead,tbody,tr,th,td {
+  position:static;
+}
+html,body {
+  background-color:#111;
+  color:#fff;
+  margin:0;
+  padding:0.5em;
+  font-family: Arial, sans-serif;
+}
+h1 {
+  font-family: 'Oswald', Impact, Charcoal, Arial, sans-serif;
+  font-weight: normal;
+  text-transform: uppercase;
+}
+hr {
+  height:0;
+  border-width:1px 0 0;
+  border-style:solid;
+  border-color:rgba(255,255,255,0.1);
+}
+p > span {
+  font-weight:bold;
+}
+table {
+  max-width:100%;
+}
+td,th {
+  padding-left:0.5em;
+}
+input {
+  font-size:inherit;
+}
+input[type=button] {
+  font-weight:bold;
+}
+input[type=text] {
+  width:100%;
+}
+.results,
+.results .load,
+.results .view,
+.results .error {
+  display:none;
+}
+.results.load,
+.results.view,
+.results.error,
+.results.load .load,
+.results.view .view,
+.results.error .error {
+  display:block;
+}
+.results .error {
+  color:#f80;
+}
+.results thead td {
+  font-weight:bold;
+}
+.results td {
+  padding-left:1em;
+}
+.email {
+  text-align:right;
+  padding-right:1em;
+}
+.email > span {
+  font-weight:normal;
+  font-color:inherit;
+}
+.email > span:after {
+  content:"ouroborus.org";
+}
+.email > span:before {
+  content:"eve@";
+}
+.listview {
+  display:block;
+  background-color:#333;
+  height:12.5em; /* 10 x 1.25em */
+  border:1px solid #555;
+  overflow:auto;
+  padding-right:5px;
+}
+.listview > div {
+  line-height:1em;
+  padding: 0.1em 0.25em 0.15em;
+  white-space:nowrap;
+  display:block;
+  width:200%;
+  cursor:pointer;
+}
+.listview > div:hover {
+  background-color:#840;
+}
+.listview > div.selected {
+  background-color:#f80;
+  color:#111;
+}
+input[type=checkbox],
+input[type=checkbox] + label {
+  cursor:pointer;
+}
+input[type=checkbox] {
+  display:none;
+}
+input[type=checkbox] + label:before {
+  content:" ";
+  display:inline-block;
+  vertical-align:middle;
+  position:relative;
+  top:-2px;
+  width:11px;
+  height:11px;
+  margin:0 4px 0 0;
+  text-align:center;
+  font-size:16px;
+  line-height:11px;
+  font-weight:bold;
+  background-color:#333;
+  border:1px solid #555;
+  cursor:pointer;
+}
+input[type=checkbox]:checked + label:before {
+  content:"\00D7";
+}
+
+.ps-container > .ps-scrollbar-y-rail > .ps-scrollbar-y {
+  width:100%;
+  border-radius:0;
+  -webkit-border-radius:0;
+  background-color:#aaa;
+}
+.ps-container.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail > .ps-scrollbar-y,
+.ps-container:hover > .ps-scrollbar-y-rail:hover > .ps-scrollbar-y {
+  background-color:#eee;
+}
+.ps-container > .ps-scrollbar-y-rail {
+  width:10px;
+  padding:0;
+  border-radius:0;
+  -webkit-border-radius:0;
+  right:0;
+}
+.ps-container:hover > .ps-scrollbar-y-rail {
+  opacity:1;
+}
+.ps-container > .ps-scrollbar-y-rail,
+.ps-container:hover > .ps-scrollbar-y-rail:hover {
+  opacity:1;
+  background-color:#666;
+}
+.ps-container.ps-in-scrolling.ps-y > .ps-scrollbar-y-rail {
+  background-color:#666;
+}
+</style>
+<script src="/jquery.min.js"></script>
+<script src="/perfect-scrollbar.jquery.min.js"></script>
+</head>
+<body>
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create','UA-64713709-3','auto');
+if(navigator.userAgent.lastIndexOf('EVE-IGB') > -1) {
+  ga('send','pageview',{'dimension1':'EVE-IGB'});
+} else {
+  ga('send','pageview');
+}
+</script>
+<h1>Station Locator</h1>
+<p><span>Description:</span> This page is a tool for finding the nearest station belonging to a specified corporation.</p>
+<p><span>Instructions:</span> Select your current location and a corporation whose stations you are interested in locating. Click 'Calculate' and, after a few moments, the stations and their systems and distances will be listed at the bottom of the page.</p>
+<p><span>Data set:</span> {{ datasetname }}</p>
+<p><span>Notes:</span> A distance of -1 means the station isn't accessible from the selected origin.</p>
+<hr>
+<div class="form-wrapper">Loading...</div>
+<hr>
+<p class="email">Issues? Requests? Email <span></span></p>
+<script>
+(function() {
+  var initialize = function(){
+    //console.log('initialize()');
+    var config = (function(){
+      var hazCookies = false,
+        cookies = {},
+        //domain = '.ouroborus.org',
+        expires = 'Fri, 31 Dec 9999 23:59:59 GMT';
+      return {
+        get:function(key){
+          if(!hazCookies){
+            var c = document.cookie.split('; ');
+            hazCookies = true;
+            cookies = {};
+            for(var i = c.length-1; i >= 0; i--){
+              var C = c[i].split('=');
+              cookies[C[0]] = C[1];
+            }
+            //console.log('cookies',cookies);
+          }
+          //console.log(['get',key,cookies[key]]);
+          return cookies[key];
+        },
+        set:function(key,value){
+          cookies[key] = value;
+          document.cookie = key + '=' + value /*+ '; domain=' + domain*/ + '; expires=' + expires;
+          //console.log(['set',key,value]);
+        }
+      };
+    })();
+    
+    var listView = $('.listview').perfectScrollbar({
+      suppressScrollX: true,
+      minScrollbarLength: 30,
+      wheelSpeed: navigator.userAgent.lastIndexOf('EVE-IGB') > -1 ? 0.05 : 1,
+    });
+    $('.listview').on('click','> div[value]',function(e){
+      //console.log('click',e,this);
+      var $this = $(this),
+        thisTop = $this.offset().top,
+        thisHeight = $this.outerHeight(),
+        $parent = $this.parent(),
+        parentTop = $parent.offset().top,
+        parentHeight = $parent.innerHeight();
+      if(thisTop < parentTop) {
+        $parent.scrollTop($parent.scrollTop() + thisTop - parentTop);
+      }
+      else if(thisTop + thisHeight > parentTop + parentHeight) {
+        $parent.scrollTop($parent.scrollTop() - parentTop - parentHeight + thisTop + thisHeight -1);
+      }
+      $('.selected',$parent).removeClass('selected');
+      $parent.data('selected',$this);
+      $this.addClass('selected');
+      $parent.siblings('input').val($this.text());
+      config.set($parent.attr('id'),$this.attr('value'));
+      ga('send','event','select',$parent.attr('id'),$this.attr('value'));
+    });
+    
+    var names = {
+      origin:(function(){
+        var results = [];
+        $('#origin').children().each(function(){
+          results.push($(this).text().toLowerCase());
+        });
+        results.sort();
+        return results;
+      })(),
+      corp:(function(){
+        var results = [];
+        $('#corp').children().each(function(){
+          results.push($(this).text().toLowerCase());
+        });
+        results.sort();
+        return results;
+      })()
+    },
+    binarySearch = function(arr,val) {
+      val = val.toLowerCase();
+      var imin = 0,
+        imax = arr.length-1;
+      while(imax >= imin) {
+        var imid = (imax - imin) / 2 + imin | 0;
+        if(arr[imid] == val) {
+          //console.log('imid',imid);
+          return imid;
+        } else if (arr[imid] < val) {
+          imin = imid + 1;
+        } else {
+          imax = imid - 1;
+        }
+      }
+      //console.log({imin:imin,imax:imax});
+      return imin;
+    };
+    $('input[type=text]').on('keyup',function(e) {
+      var $this = $(this),
+        val = $(this).val(),
+        name = $this.attr('name'),
+        bs = binarySearch(names[name],val),
+        $elem = $('#'+name).children().eq(bs);
+        elemTop = $elem.offset().top,
+        elemHeight = $elem.outerHeight(),
+        $parent = $elem.parent(),
+        parentTop = $parent.offset().top,
+        parentHeight = $parent.innerHeight();
+      $parent.scrollTop($parent.scrollTop() + elemTop - parentTop - parentHeight / 2 + elemHeight);
+    });
+    
+    var maskToInt = function() {
+      results = 0;
+      $('input[type=checkbox]:checked').each(function(){
+        results += parseInt($(this).attr('value'));
+      });
+      return results;
+    },
+    intToMask = function(mask) {
+      $('input[type=checkbox]').each(function(i,e){
+        var $e = $(e);
+        $e.prop('checked',!!($e.attr('value') & mask));
+      });
+    },
+    fetchResultsDone = function(data, textStatus, jqXHR) {
+      var $tbody = $('<tbody></tody>');
+      for(var i = 0; i < data.length; i++) {
+        var $row = $('<tr></tr>');
+        $('<td></td>').text(data[i].distance).appendTo($row);
+        $('<td></td>').text(data[i].solarSystem.name).appendTo($row);
+        $('<td></td>').text(data[i].region.name).appendTo($row);
+        $('<td></td>').text(data[i].station.name).appendTo($row);
+        $row.appendTo($tbody);
+      }
+      $('.results .view tbody').replaceWith($tbody);
+      $('.results').removeClass('load view error').addClass('view');
+    },
+    fetchResultsFail = function(jqXHR, textStatus, errorThrown) {
+      //console.log('fetchResultsFail', jqXHR, textStatus, errorThrown);
+      if(jqXHR.responseJSON && jqXHR.responseJSON.error) {
+        $('.results .error').text('Error: ' + jqXHR.responseJSON.error);
+      }
+      else if(jqXHR.responseText) {
+        $('.results .error').text('Error response with unknown format: ' + jqXHR.responseText);
+      }
+      else {
+        $('.results .error').text('Error response with unknown format: ' + jqXHR.status + ' ' + jqXHR.statusText);
+      }
+      $('.results').removeClass('load view error').addClass('error');
+    },
+    fetchResults = function(solarSystem, corporation, mask) {
+      $('.results').removeClass('load view error').addClass('load');
+      $.getJSON('/api/' + solarSystem + '/' + corporation + '/' + mask)
+        .done(fetchResultsDone)
+        .fail(fetchResultsFail);
+    };
+    
+    $.each(['origin','corp'], function(i,name) {
+      var $elem = $('#' + name + '>' + (config.get(name) ? '[value="' + (config.get(name) % 1000000) + '"]' : '.default'));
+      if($elem.length == 0) {
+        $elem = $('#' + name + '>.default');
+        config.set(name,'');
+      }
+      var elemTop = $elem.offset().top,
+        elemHeight = $elem.outerHeight(),
+        $parent = $elem.parent(),
+        parentTop = $parent.offset().top,
+        parentHeight = $parent.innerHeight();
+      $parent.data('selected',$elem);
+      $elem.addClass('selected');
+      $parent.siblings('input').val($elem.text());
+      $parent.scrollTop($parent.scrollTop() + elemTop - parentTop - parentHeight / 2 + elemHeight);
+    });
+    intToMask(config.get('mask')|0);
+    $('input[type=checkbox]').on('click',function(e){
+      config.set('mask',maskToInt());
+    });
+    $('input[type=button]').on('click',function(e){
+      e.preventDefault();
+      var solarSystem = {{ solarSystemsIdOffset }} + parseInt($('#origin').data('selected').attr('value')),
+        corporation = {{ corporationsIdOffset }} + parseInt($('#corp').data('selected').attr('value')),
+        mask = maskToInt();
+      if(!solarSystem || !corporation) {
+        $('.results .error').text('Error: An origin and a corporation must be selected.');
+        $('.results').removeClass('load view error').addClass('error');
+        ga('send','event','button','click','calculate error');
+        return;
+      }
+      //console.log(solarSystem, corporation, mask);
+      fetchResults(solarSystem, corporation, mask);
+      ga('send','event','button','click','calculate '+solarSystem+' '+corporation+' '+mask);
+    });
+    
+    setInterval(function(){
+      ga('send','event','keepAlive','ping');
+      //ga('send','event','keepAlive','ping', {nonInteraction:1});
+    },15000);
+  
+    $(window).on('unload',function(){
+      ga('send','pageview',{'sessionControl':'end'});
+    });
+  };
+  window.wantsGzip = function(result){
+    //console.log('wantsGzip()',result);
+    if(result){
+      $('.form-wrapper').load('/app',function(responseText,textStatus,jqXHR){
+        //console.log(textStatus,jqXHR);
+        initialize();
+      });
+    }
+    else {
+      $('.form-wrapper').text("Load failed: Browser did not request gzip compression.");
+    }
+  };
+  $.getScript('//ouroborus.org/test/gzip.php');
+})();
+</script>
+</body>
+</html>

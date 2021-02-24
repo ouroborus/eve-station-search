@@ -1,0 +1,53 @@
+<table><tr><td><b>Origin</b></td>
+<td><b>Corporation</b></td>
+<td><b>Avoid</b></td></tr>
+
+<tr><td rowspan="11">
+<input type="text" name="origin">
+<div id="origin" class="listview">
+{%- for id in solarSystemsSorted %}
+  <div{{ ' class="default"' if id == solarSystemsDefault }} value="{{ id - solarSystemsIdOffset }}">{{ solarSystems[id]['name'] }}</div>
+{%- endfor %}
+</div></td>
+<td rowspan="11">
+<input type="text" name="corp">
+<div id="corp" class="listview">
+{%- for id in corporationsSorted %}
+  <div{{ ' class="default"' if id == corporationsDefault }} value="{{ id - corporationsIdOffset }}">{{ corporations[id]['name'] }}</div>
+{%- endfor %}
+</div></td>
+
+<td><input type="checkbox" id="m10" value="1024"><label for="m10">1.0</label></td></tr>
+<tr><td><input type="checkbox" id="m9" value="512"><label for="m9">0.9</label></td></tr>
+<tr><td><input type="checkbox" id="m8" value="256"><label for="m8">0.8</label></td></tr>
+<tr><td><input type="checkbox" id="m7" value="128"><label for="m7">0.7</label></td></tr>
+<tr><td><input type="checkbox" id="m6" value="64" ><label for="m6">0.6</label></td></tr>
+<tr><td><input type="checkbox" id="m5" value="32" ><label for="m5">0.5</label></td></tr>
+<tr><td><input type="checkbox" id="m4" value="16" ><label for="m4">0.4</label></td></tr>
+<tr><td><input type="checkbox" id="m3" value="8"  ><label for="m3">0.3</label></td></tr>
+<tr><td><input type="checkbox" id="m2" value="4"  ><label for="m2">0.2</label></td></tr>
+<tr><td><input type="checkbox" id="m1" value="2"  ><label for="m1">0.1</label></td></tr>
+<tr><td><input type="checkbox" id="m0" value="1"  ><label for="m0">0.0</label></td></tr>
+<tr><td colspan="2" align="right"><input type="button" value="Calculate"></td></tr></table>
+<div class="results">
+  <hr>
+  <div class="load">
+    Loading...
+  </div>
+  <div class="view">
+    <table>
+      <thead>
+        <tr>
+          <td>Distance</td>
+          <td>System</td>
+          <td>Region</td>
+          <td>Station</td>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+  <div class="error">
+  </div>
+</div>

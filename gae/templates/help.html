@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+html,body{
+  width:100%;
+  height:100%;
+  padding:0;
+  margin:0;
+  font-family:sans-serif;
+}
+body>div {
+  position:relative;
+  box-sizing:border-box;
+  width:100%;
+  max-width:1024px;
+  min-height:100%;
+  margin:0 -512px;
+  padding:0 1em;
+  background-color:#eee;
+  float:left;
+}
+body:before, body:after {
+  content:"";
+  display:block;
+  width:50%;
+  min-height:100%;
+  margin:0;
+  padding:0;
+  background-color:transparent;
+  float:left;
+  position:relative;
+}
+body:before{
+  right:512px;
+}
+body:after{
+  left:512px;
+}
+</style>
+</head>
+<body>
+<div>
+<p>{{ host_url }}/api/[Solar System ID]/[Corporation ID]/[Security Mask]</p>
+<dl>
+<dt>Solar System ID</dt>
+<dd>The ID number of the solar system of origin</dd>
+<dt>Corporation ID</dt>
+<dd>The ID number of corporation owning the stations of interest</dd>
+<dt>Security Mask</dt>
+<dd>An integer representing a bit field. Each set bit flags a system security rating for avoidence when calculating paths. There are 11 bits ordered by system security rating with zero sec in the least significant bit. For example, 0b00000111111 is decimal 63 and would set avoidance for any sectors with a security rating at or below 0.5.</dd>
+</dl>
+</div>
+</body>
+</html>

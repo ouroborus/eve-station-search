@@ -1,0 +1,32 @@
+runtime: python27
+api_version: 1
+threadsafe: yes
+instance_class: F1
+automatic_scaling:
+  max_instances: 1
+
+handlers:
+- url: /(apple-touch-icon\.png|apple-touch-icon-precomposed\.png|favicon\.ico|jquery\.min\.js|perfect-scrollbar\.jquery\.min\.js|perfect-scrollbar\.min\.css|robots\.txt|sitemap\.xml|ads\.txt)$
+  static_files: static/\1
+  upload: static/.+
+- url: /cron
+  script: main.app
+  login: admin
+- url: /.*
+  script: main.app
+
+libraries:
+- name: webapp2
+  version: "2.5.2"
+- name: jinja2
+  version: "2.6"
+
+builtins:
+- remote_api: on
+
+skip_files:
+- ^(.*/)?.*\.py[co]$
+- ^(.*/)?#.*#$
+- ^(.*/)?.*~$
+- ^(.*/)?.*/RCS/.*$
+- ^(.*/)?\..*$

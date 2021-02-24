@@ -1,0 +1,3 @@
+datasetname: sde-TRANQUILITY-20210223.zip
+template_filename: data.template
+python_filename: datatest.py

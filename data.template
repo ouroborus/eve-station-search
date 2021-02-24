@@ -1,0 +1,10 @@
+datasetname = {{ datasetname }}
+corporations = {{ corporations }}
+regions = {{ regions }}
+stations = {{ stations }}
+solarSystems = {{ solarSystems }}
+corporationsSorted = {{ corporationsSorted }}
+solarSystemsSorted = {{ solarSystemsSorted }}
+
+if __name__ == "__main__":
+	pass
