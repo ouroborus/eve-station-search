@@ -3,8 +3,6 @@ Tool for Eve Online to find the nearest station belonging to an NPC corporation.
 
 This project consists of two parts: Data conversion software to convert the EVE data into a structure more convenient for the web server; and a web application designed to run on the Google App Engine platform.
 
-This repository includes a pre-compiled data set, `gae/data.py`. Building it isn't necessary.
-
 ## Build environment
 
 * The Eve Online static data export
@@ -17,4 +15,12 @@ This repository includes a pre-compiled data set, `gae/data.py`. Building it isn
 
 ## Building
 
-`cd` into the directory, then run `./map.py` followed by `./reduce.py`. `map.py` can take quite a while depending on CPU speed as the YAML format isn't efficient for reading.
+* Download the dataset fro EVE Online's site
+* `cd` into the directory
+* Mangler configuration is in `config.yaml`
+* `python map.py`
+* * This can take a while
+* `python reduce.py`
+* Move the generated file (`testdata.py`) to the `gae` folder and rename it to `data.py`
+* `cd gae`
+* `dev_appserver.py app.yaml`
